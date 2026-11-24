@@ -1,0 +1,646 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ typeface */
+/* Self-hosted Inter: the UI must not depend on a system font being installed.
+   Subset to Latin so the whole set costs ~220 KB. */
+@font-face {
+  font-family: "InterLocal";
+  src: url("./assets/fonts/Inter-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "InterLocal";
+  src: url("./assets/fonts/Inter-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "InterLocal";
+  src: url("./assets/fonts/Inter-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "InterLocal";
+  src: url("./assets/fonts/Inter-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "InterLocal";
+  src: url("./assets/fonts/Inter-ExtraBold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "InterLocal", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --color-ink-950: #05060a;
+  --color-ink-900: #080a11;
+  --color-ink-850: #0b0e17;
+  --color-ink-800: #11151f;
+  --color-ink-700: #1a2030;
+  --color-ink-600: #263040;
+  --color-accent: #8166ff;
+  --color-accent-soft: #b6a2ff;
+  --color-mint: #46e3cd;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    margin: 0;
+    /* Layered light sources: a cool wash from the top left, a faint mint
+       counter-light at the right, and a deep near-black base. Everything above
+       sits on this, so glass panels have something to refract. */
+    background:
+      radial-gradient(1100px 620px at 12% -14%, rgba(129, 102, 255, 0.22), transparent 62%),
+      radial-gradient(880px 520px at 98% -6%, rgba(70, 227, 205, 0.12), transparent 58%),
+      radial-gradient(900px 900px at 50% 120%, rgba(88, 63, 190, 0.14), transparent 65%),
+      #05060a;
+    background-attachment: fixed;
+    color: #eaedf5;
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.006em;
+    min-height: 100vh;
+  }
+  /* Fine grain over the page. At 3% it is invisible as texture but stops the
+     large dark gradients from banding on wide screens. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.032;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  #root {
+    position: relative;
+    z-index: 1;
+  }
+  * {
+    border-color: rgba(255, 255, 255, 0.075);
+  }
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.024em;
+  }
+  ::selection {
+    background: rgba(129, 102, 255, 0.38);
+    color: #fff;
+  }
+  :focus-visible {
+    outline: 2px solid rgba(182, 162, 255, 0.65);
+    outline-offset: 2px;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.11);
+    border-radius: 99px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+    background-clip: content-box;
+  }
+}
+
+@layer components {
+  /* ---------------------------------------------------------------- surfaces */
+  /*
+   * The core material: a translucent pane that picks up the page light. Three
+   * things sell the glass — a graded fill (brighter at the top), a 1px
+   * specular line along the top edge, and a soft outer shadow that lifts it off
+   * the background. The blur+saturate pair lets the coloured wash below tint
+   * whatever sits behind it.
+   */
+  .glass {
+    position: relative;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background:
+      linear-gradient(
+        165deg,
+        rgba(255, 255, 255, 0.085) 0%,
+        rgba(255, 255, 255, 0.03) 38%,
+        rgba(255, 255, 255, 0.022) 62%,
+        rgba(255, 255, 255, 0.055) 100%
+      ),
+      rgba(13, 16, 25, 0.55);
+    backdrop-filter: blur(24px) saturate(155%);
+    -webkit-backdrop-filter: blur(24px) saturate(155%);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.13),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.35),
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 22px 48px -28px rgba(0, 0, 0, 0.85);
+  }
+  /* A narrow sheen sweeping the top-left corner, like light hitting glass. */
+  .glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(
+      120% 70% at 8% -20%,
+      rgba(255, 255, 255, 0.11),
+      rgba(255, 255, 255, 0) 58%
+    );
+    opacity: 0.9;
+  }
+  .glass > * {
+    position: relative;
+  }
+
+  /* Cards keep the old name so every page inherits the new material. */
+  .card {
+    position: relative;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background:
+      linear-gradient(
+        165deg,
+        rgba(255, 255, 255, 0.085) 0%,
+        rgba(255, 255, 255, 0.03) 38%,
+        rgba(255, 255, 255, 0.022) 62%,
+        rgba(255, 255, 255, 0.055) 100%
+      ),
+      rgba(13, 16, 25, 0.55);
+    backdrop-filter: blur(24px) saturate(155%);
+    -webkit-backdrop-filter: blur(24px) saturate(155%);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.13),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.35),
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 22px 48px -28px rgba(0, 0, 0, 0.85);
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(
+      120% 70% at 8% -20%,
+      rgba(255, 255, 255, 0.11),
+      rgba(255, 255, 255, 0) 58%
+    );
+    opacity: 0.9;
+  }
+  .card > * {
+    position: relative;
+  }
+
+  .card-hover {
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.35s ease,
+      box-shadow 0.35s ease,
+      background 0.35s ease;
+    will-change: transform;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.17);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.35),
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 30px 60px -26px rgba(0, 0, 0, 0.9),
+      0 0 0 1px rgba(129, 102, 255, 0.14),
+      0 18px 50px -30px rgba(129, 102, 255, 0.6);
+  }
+
+  /* Nesting material: recessed, so an inner panel reads as sitting *inside* the
+     card rather than floating on it. */
+  .glass-inset {
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.065);
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.2)),
+      rgba(255, 255, 255, 0.015);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.055), inset 0 8px 20px -14px rgba(0, 0, 0, 0.9);
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .glass-inset:hover {
+    border-color: rgba(255, 255, 255, 0.11);
+  }
+
+  /* Light-weight pane for chips, tabs and small controls. */
+  .glass-soft {
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.045);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  }
+
+  /* ---------------------------------------------------------------- controls */
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 550;
+    line-height: 1.25rem;
+    letter-spacing: -0.008em;
+    transition:
+      transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+      background 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      filter 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+    filter: saturate(0.5);
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(0.5px) scale(0.995);
+  }
+  .btn-primary {
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 46%),
+      linear-gradient(135deg, #8f73ff 0%, #7050f5 55%, #5b3ce8 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.32),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+      0 10px 26px -12px rgba(112, 80, 245, 0.95),
+      0 2px 6px rgba(0, 0, 0, 0.35);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+  }
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.07);
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+      0 16px 34px -12px rgba(112, 80, 245, 1),
+      0 2px 6px rgba(0, 0, 0, 0.35);
+  }
+  .btn-ghost {
+    color: #e4e9f4;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02) 55%),
+      rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.11), 0 2px 8px -4px rgba(0, 0, 0, 0.6);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.19);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05) 55%),
+      rgba(255, 255, 255, 0.05);
+  }
+  .btn-danger {
+    border: 1px solid rgba(244, 63, 94, 0.32);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent 55%),
+      rgba(244, 63, 94, 0.11);
+    color: #ffb4c0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.13), transparent 55%),
+      rgba(244, 63, 94, 0.2);
+    border-color: rgba(244, 63, 94, 0.45);
+  }
+  .btn-sm {
+    padding: 0.32rem 0.7rem;
+    font-size: 0.75rem;
+    border-radius: 9px;
+    gap: 0.35rem;
+  }
+
+  .input {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(3, 5, 10, 0.42);
+    padding: 0.62rem 0.9rem;
+    font-size: 0.875rem;
+    color: #f2f5fb;
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+  .input::placeholder {
+    color: #6b7688;
+  }
+  .input:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  .input:focus {
+    border-color: rgba(160, 136, 255, 0.75);
+    background: rgba(3, 5, 10, 0.55);
+    box-shadow:
+      inset 0 1px 2px rgba(0, 0, 0, 0.4),
+      0 0 0 3.5px rgba(129, 102, 255, 0.16);
+  }
+  select.input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    padding-right: 2rem;
+  }
+
+  .label {
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #8b96a9;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.025));
+    padding: 0.22rem 0.62rem;
+    font-size: 11px;
+    font-weight: 550;
+    letter-spacing: -0.004em;
+    color: #d3dae7;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+  }
+
+  .nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    border-radius: 11px;
+    border: 1px solid transparent;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.845rem;
+    font-weight: 500;
+    color: #97a2b5;
+    transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  }
+  .nav-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+  .nav-link-active {
+    color: #fff;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
+    border-color: rgba(255, 255, 255, 0.11);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      0 6px 18px -12px rgba(0, 0, 0, 0.9);
+  }
+  /* Small luminous bar marking the current page. */
+  .nav-link-active::after {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: 50%;
+    height: 16px;
+    width: 2px;
+    transform: translateY(-50%);
+    border-radius: 99px;
+    background: linear-gradient(180deg, #c7b8ff, #8166ff);
+    box-shadow: 0 0 12px rgba(129, 102, 255, 0.9);
+  }
+
+  .skeleton {
+    border-radius: 16px;
+    background: linear-gradient(
+      100deg,
+      rgba(255, 255, 255, 0.045) 30%,
+      rgba(255, 255, 255, 0.085) 50%,
+      rgba(255, 255, 255, 0.045) 70%
+    );
+    background-size: 220% 100%;
+    animation: skeleton-sweep 1.6s ease-in-out infinite;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .divider {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.11) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    border: 0;
+  }
+
+  /* Range sliders: the glass track with a bright thumb, used throughout the
+     inspector for sizes, volumes and trim. */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 20px;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.07));
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 14px;
+    width: 14px;
+    margin-top: -5px;
+    border-radius: 99px;
+    background: linear-gradient(180deg, #ffffff, #d8cfff 60%, #b6a2ff);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.7), 0 0 12px rgba(129, 102, 255, 0.5);
+    transition: transform 0.15s ease;
+  }
+  input[type="range"]:active::-webkit-slider-thumb {
+    transform: scale(1.15);
+  }
+  input[type="range"]::-moz-range-track {
+    height: 4px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.14);
+  }
+  input[type="range"]::-moz-range-thumb {
+    height: 13px;
+    width: 13px;
+    border-radius: 99px;
+    background: #e9e2ff;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+  }
+
+  /* Checkboxes and radios follow the same material. */
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: #8166ff;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  /* Hairline highlight used on panel headers and table rows. */
+  .top-sheen {
+    position: relative;
+  }
+  .top-sheen::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  }
+  .glow-violet {
+    box-shadow: 0 0 40px -12px rgba(129, 102, 255, 0.55);
+  }
+}
+
+@keyframes skeleton-sweep {
+  0% {
+    background-position: 180% 0;
+  }
+  100% {
+    background-position: -80% 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-rise {
+  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Staggered entrance for grids: children fade up in sequence. */
+.stagger > * {
+  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger > *:nth-child(2) { animation-delay: 0.07s; }
+.stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger > *:nth-child(4) { animation-delay: 0.17s; }
+.stagger > *:nth-child(5) { animation-delay: 0.22s; }
+.stagger > *:nth-child(6) { animation-delay: 0.27s; }
+.stagger > *:nth-child(n + 7) { animation-delay: 0.32s; }
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.shimmer {
+  background: linear-gradient(90deg, #b6a2ff 0%, #46e3cd 45%, #b6a2ff 90%);
+  background-size: 200% 100%;
+  animation: shimmer 4s linear infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(129, 102, 255, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(129, 102, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(129, 102, 255, 0);
+  }
+}
+.pulse-ring {
+  animation: pulse-ring 2s infinite;
+}
+
+/* captions preview overlay */
+.cap-shadow {
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.9),
+    0 0 18px rgba(0, 0, 0, 0.65),
+    0 0 2px #000;
+}
+
+@keyframes headlineIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
