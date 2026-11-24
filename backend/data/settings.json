@@ -1,0 +1,32 @@
+{
+  "whisper_model": "base.en",
+  "llm_enabled": false,
+  "llm_base_url": "https://api.openai.com/v1",
+  "llm_model": "gpt-4o-mini",
+  "llm_api_key_set": false,
+  "max_clips": 10,
+  "default_aspect": "9:16",
+  "default_aspects": [
+    "9:16"
+  ],
+  "emoji_enabled": true,
+  "keywords_enabled": true,
+  "brand_kit": {
+    "name": "My channel",
+    "caption_style": "neon",
+    "caption_position": "bottom",
+    "caption_size": 115,
+    "caption_font": "",
+    "accent_color": "#22d3ee",
+    "watermark": "ClipForge",
+    "watermark_size": 100,
+    "music": "none",
+    "music_volume": 0.12,
+    "progress_bar": true,
+    "emoji_enabled": false,
+    "keywords_enabled": true,
+    "inset_border_color": "#ffffff",
+    "inset_border_width": 4,
+    "inset_radius": 26
+  }
+}
